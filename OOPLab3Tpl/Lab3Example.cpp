@@ -8,14 +8,14 @@
 #endif
 using namespace std;
 
-class Icosahedron {
-	double a; // side of the icosahedron
+class Triangle {
+	double a, b, c; // sides of the Triangle
 	unsigned int color;
 public:
-	Icosahedron() : a(1.0), color(0) {}
-	Icosahedron(double ai) : a(ai), color(0) {}
-	Icosahedron(int ic) : a(1.0) { if (ic >= 0) color = ic; else color = 0; }
-	Icosahedron(double a, int c) {
+	Triangle() : a(1.0), b(2.0), c(3.0), color(0) {}
+	Triangle(double ai) : a(ai), color(0) {}
+	Triangle(int ic) : a(1.0) { if (ic >= 0) color = ic; else color = 0; }
+	Triangle(double a, int c) {
 		this->a = a;
 		if (c >= 0) color = c; else color = 0;
 	}
@@ -46,31 +46,27 @@ public:
 		this->color = c;
 	}
 	double S() {
-		return 5 * a * a * sqrt(3.0);
+		return sqrt(((a+b+c)/2) * (((a+b+c)/2)-a) * (((a+b+c)/2)-b) * (((a+b+c)/2)-c));
 	}
-	double V() {
-		return 5 * a * a * a * (3 + sqrt(5.0)) / 12.0;
+	double P() {
+		return (a + b + c);
 	}
-	double r() {
-		return a * (3 + sqrt(5.0)) / (4.0 * sqrt(3.0));
-	}
-	double R() {
-		return sqrt(2 * (5 + sqrt(5.0) * a)) / 4.0;
-	}
+
+	
 	void printInfo()
 	{
-		cout << "\n a= " << a << " color = " << color;
-		cout << "  S= " << S() << " V = " << V() << "  r= " << r() << " V = " << R() << endl;
+		cout << "\n a= " << a << "   b = " << b << "   c = " << c  << "   color = " << color;
+		cout << "  S= " << S() << "   P = " << P() <<  endl;
 	}
 
 };
 int mainExample1()
 {
-	Icosahedron obj;
+	Triangle obj;
 	obj.printInfo();
 	double in_a; int in_color;
-	cout << " Input side and color Icosahedron  "; cin >> in_a >> in_color;
-	Icosahedron obj1(in_a), obj2(in_color), obj3(in_a, in_color);
+	cout << " Input side and color Triangle  "; cin >> in_a >> in_color;
+	Triangle obj1(in_a), obj2(in_color), obj3(in_a, in_color);
 	obj1.printInfo();
 	obj2.printInfo();
 	obj3.printInfo();
