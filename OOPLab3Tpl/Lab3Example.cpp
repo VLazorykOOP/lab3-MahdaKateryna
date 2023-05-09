@@ -118,170 +118,217 @@ enum STATE {
 	OK, BAD_INIT, BAD_DIV
 };
 
-class Vec2
+int object_count;
+class LongVector
 {
-	double  x, y;
-	int state;
-	static int count;
+	long* v;
+	int num;   // default num=2
+	int state = 0;
 public:
-	Vec2() : x(0), y(0) {
-		state = OK; count++;
-	}   // 	 конструктор без параметрів
-	Vec2(double iv) : x(iv), y(iv) {
-		state = OK; count++;
+	LongVector() : LongVector(2) { object_count++; }
+	LongVector(int n) {
+		if (n <= 0) n = 2;  // default num =2;
+		num = n;
+		v = new long[n];
+		for (int i = 0; i < n; i++) {
+			v[i] = 0;
+		}
+		object_count++;
 	}
-	Vec2(double ix, double iy);
-	Vec2(double* v);
-	~Vec2() {
-		count--;
-		cout << " state Vec " << state;
-		cout << " Vec delete \n";
+	LongVector(int n, long b) : LongVector(n) {
+		for (int i = 0; i < num; i++) v[i] = b;
+		object_count++;
+	};
+	LongVector(int n, long* p) : LongVector(n) {
+		if (p != nullptr) for (int i = 0; i < num; i++) v[i] = p[i];
+		object_count++;
+	};
+	LongVector(const LongVector& s) {
+		num = s.num;
+		v = new long[num];
+		state = s.state;
+		for (int i = 0; i < num; i++)   v[i] = s.v[i];
+		object_count++;
+	};
+	LongVector operator+(LongVector s) const {
+		if (num != s.num) {
+			LongVector result;
+			result.state = 1;
+			return result;
+		}
+		else {
+			LongVector result(num);
+			for (int i = 0; i < num; i++) {
+				result.v[i] = v[i] + s.v[i];
+			}
+			return result;
+		}
 	}
-	Vec2(const Vec2&);
-	Vec2 Add(Vec2& d);
-	Vec2 Sub(Vec2& d);
-	Vec2 Mul(double d);
-	Vec2 Div(double d);
-	void Input();   //  !!! Без первантаження операцій    
-	void Output();  //  !!! Без первантаження операцій
-	bool CompLessAll(Vec2& s);
-	static int getCount() {
-		if (count <= 0) cout << " Немає об'єктів Vec2 ";
-		return count;
-	}
-	int getState() { return state; }
-};
-int Vec2::count = 0;
-Vec2::Vec2(double ix, double iy) {
-	x = ix; y = iy;
-	state = OK;
-	count++;
-}
-Vec2::Vec2(const Vec2& s) {
-	//if (this == &s) return; //  // the expression is used in the old standard
-	x = s.x; y = s.y; state = OK;
-	count++;
-};
-Vec2::Vec2(double* v) {
-	if (v == nullptr) {
-		state = BAD_INIT; x = 0; y = 0;
-	}
-	else {
-		x = v[0]; y = v[1];
-		state = OK;
-	}
-	count++;
-}
-void Vec2::Input() {
-	cout << " Input  x y ";
-	cin >> x >> y;
-}
-void Vec2::Output() {
-	cout << " x =" << x << " y = " << y << " state  " << state << endl;
-}
+	LongVector operator-(const LongVector s) const {
+		if (num != s.num) {
+			LongVector result;
+			result.state = 1;
+			return result;
+		}
+		else {
+			LongVector result(num);
+			for (int i = 0; i < num; i++) {
+				result.v[i] = v[i] - s.v[i];
+			}
+			return result;
+		}
+	};
+	LongVector operator*(unsigned int scalar) const {
+		LongVector result(num);
+		for (int i = 0; i < num; i++) {
+			result.v[i] = v[i] * scalar;
+		}
+		return result;
+	};
+	bool operator>(const LongVector s) const {
+		if (num != s.num) {
+			return false;
+		}
+		else {
+			for (int i = 0; i < num; i++) {
+				if (v[i] <= s.v[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+	};
+	bool operator!=(const LongVector s) const {
+		if (num != s.num) {
+			return true;
+		}
+		else {
+			for (int i = 0; i < num; i++) {
+				if (v[i] != s.v[i]) {
+					return true;
+				}
+			}
+			return false;
+		}
+	};
+	bool operator==(const LongVector s) const {
+		if (num != s.num) {
+			return false;
+		}
+		else {
+			for (int i = 0; i < num; i++) {
+				if (v[i] != s.v[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
+	};
+	LongVector operator=(LongVector s) {
 
-Vec2 Vec2::Add(Vec2& s) {
-	Vec2 tmp;
-	tmp.x = x + s.x;
-	tmp.y = y + s.y;
-	return tmp;
-}
-
-Vec2 Vec2::Sub(Vec2& s) {
-	Vec2 tmp;
-	tmp.x = x - s.x;
-	tmp.y = y - s.y;
-	return tmp;
-}
-Vec2 Vec2::Div(double d) {
-	Vec2 tmp;
-	if (fabs(d) < 1.e-25) {
-		tmp.state = BAD_DIV;
-		cout << " Error div \n";
+		if (num != s.num)
+		{
+			delete[] v;
+			num = s.num;
+			v = new long[num];
+			state = s.state;
+		}
+		for (int i = 0; i < num; i++)   v[i] = s.v[i];
 		return *this;
+	};
+	~LongVector() {
+		delete[] v;
+		object_count--;
 	}
-	tmp.x = x / d;
-	tmp.y = y / d;
-	return tmp;
-}
-Vec2 Vec2::Mul(double d) {
-	Vec2 tmp;
-	tmp.x = x * d;
-	tmp.y = y * d;
-	return tmp;
-}
-
-bool Vec2::CompLessAll(Vec2& s) {
-
-	if (x < s.x && y < s.y) return true;
-	return false;
-}
+	void set(int index, long x = 0) { if (index >= 0 && index <= num) v[index] = x; else state = 1; }
+	long get(int index) { if (index >= 0 && index <= num) return v[index]; else state = 1; }
+	void Output() {
+		if (state == 1) {
+			cout << "Index error";
+			return;
+		}
+		if (num != 0) {
+			for (int i = 0; i < num; i++) {
+				cout << " v [ " << i << " ]   " << v[i] << '\t';
+				cout << endl;
+			}
+		}
+	};
+	void Input() {
+		int in_num = 0;
+		do {
+			cout << "Input size Vec\n";
+			cin >> in_num;
+			} while (in_num <= 0);
+			if (num != in_num) {
+				num = in_num;
+				if (v) delete[] v;
+				v = new long[num];
+			}
+			for (int i = 0; i < num; i++) {
+				cout << " v [ " << i << " ]= "; cin >> v[i];
+			}
+		};
+	};
 
 int mainExample3()
 {
-#if !defined(CODING_VS_CODE)
-	setlocale(LC_CTYPE, "ukr");
-	cout << "Тестування створенного класу \n";
-	cout << "Тестування конструкторiв \n"; 
-#else 
-	cout << "Testing create class  \n";
-	cout << "Testing crot's  \n";
-#endif
-	Vec2 ObjCDef;
-	ObjCDef.Output();
-	Vec2 ObjP1(10.0);
-	ObjP1.Output();
-	double  a = 1.0, b = 2.0;
-	Vec2  ObjP2(a, b);
-	ObjP2.Output();
-	Vec2 ObjCopy(ObjP2);
-	double* v = nullptr, v2[] = { 1.2, 3.3 };
-	Vec2  ObjP3(v2);
-	if (ObjP3.getState() != OK) cout << " ObjP3  x= 0  y= 0  \n";
-	Vec2  ObjP4(v2);
-	if (ObjP4.getState() != OK) cout << " ObjP4 x= 0  y= 0  \n";
-#if !defined(CODING_VS_CODE)
-	cout << " Кiлькiсть створених об'єктiв Vec2 " << Vec2::getCount() << endl;
-	cout << "Тестування введення \n";
-	ObjCDef.Input();
-	cout << "Тестування функцiй \n";
-	ObjCDef = ObjCDef.Add(ObjP2);
-	ObjCDef.Output();
-	cout << " \n Кiлькiсть створених об'єктiв Vec2 до Sub " << Vec2::getCount() << endl;
-	ObjCDef = ObjCDef.Sub(ObjP2);
-	cout << " \n Кiлькiсть створених об'єктiв Vec2 пiсля Sub " << Vec2::getCount() << endl;
-#else 
-	cout << "Testing input \n";
-	ObjCDef.Input();
-	cout << "Testing gunction \n";
-	ObjCDef = ObjCDef.Add(ObjP2);
-	ObjCDef.Output();
-	cout << " \n Counts create objects Vec2 before  Sub " << Vec2::getCount() << endl;
-	ObjCDef = ObjCDef.Sub(ObjP2);
-	cout << " \n  Counts create objects Vec2 after Sub  " << Vec2::getCount() << endl;
-#endif
+	object_count = 0;
+	LongVector v1;
+	cout << "Vector 1: ";
+	v1.Output();
+	cout << endl;
 
-	ObjCDef.Output();
-	ObjCDef = ObjCDef.Mul(5);
-	ObjCDef.Output();
-	ObjCDef = ObjCDef.Div(1.3);
-	if (ObjCDef.getState() == STATE::BAD_DIV) cout << "BAD_DIV \n";
-	ObjCDef.Output();
+	LongVector v2(5);
+	cout << "Vector 2: ";
+	v2.Output();
+	cout << endl;
 
-	ObjCDef = ObjCDef.Div(0.0);
-	if (ObjCDef.getState() == STATE::BAD_DIV) cout << "BAD_DIV \n";
-	ObjCDef.Output();
-	cout << "ObjCopy state " << ObjCopy.getState() << endl;
-	if (ObjCopy.CompLessAll(ObjCDef))  cout << "ObjCopy less ObjDef  " << endl;
+	LongVector v3(3, 7);
+	cout << "Vector 3: ";
+	v3.Output();
+	cout << endl;
 
-	
-#if !defined(CODING_VS_CODE)
-	cout << "Завершення  тестування  \n";
-#else 
-	cout << "Completion of testing  \n";
-#endif
-	return 1;
+	LongVector v4(v3);
+	cout << "Vector 4 (copy of Vector 3): ";
+	v4.Output();
+	cout << endl;
 
+	LongVector v5;
+	v5 = v2;
+	cout << "Vector 5 (assigned from Vector 2): ";
+	v5.Output();
+	cout << endl;
+
+	v3.set(0, 9);
+	cout << "Vector 3 (after setting first element to 9): ";
+	v3.Output();
+	cout << endl;
+
+	cout << "The first element of Vector 3 is: " << v3.get(0) << endl;
+
+	cout << "Vector 3 + Vector 4";
+	v1 = v3 + v4;
+	v1.Output();
+
+	cout << "Vector 1 - Vector 3";
+	v1 = v1 - v4;
+	v1.Output();
+
+	cout << "Vector 1 * 4";
+	v1 = v1 * 4;
+	v1.Output();
+
+	cout << "Vector 1 > Vector 4: " << (v1 > v4) << endl;
+	cout << "Vector 1 != Vector 4: " << (v1 != v4) << endl;
+	cout << "Vector 1 == Vector 4: " << (v1 == v4) << endl;
+
+	v3.set(5, 1);
+	cout << "Vector 3 (after trying to set 6th element to 1): ";
+	v3.Output();
+	cout << endl;
+
+	return 0;
 }
 /*example  4
 Створити тип даних - клас вектор, який має вказівник на ComplexDouble, число елементів і змінну стану. У класі визначити
